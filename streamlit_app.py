@@ -7,6 +7,8 @@ import numpy as np
 import random
 import pickle
 from q_nash import QAgent
+from minimax import QAgent_Minimax
+from maximax import QAgent_Maximax
 
 # ---- Tic-tac-toe environment ---- #
 def create_board():
@@ -33,18 +35,45 @@ def board_to_state(board):
 
 
 # ---- Agents ---- #
-def load_agents():
-    agent_X = QAgent("X")
-    agent_O = QAgent("O")
+def load_agents(strategy):
+    if strategy == "nash":
+        agent_X = QAgent("X")
+        agent_O = QAgent("O")
 
-    # Load Q-tables
-    with open("qtables/agent_X_qtable_nash.pkl", "rb") as f:
-        q_X = pickle.load(f)
-    agent_X.q_table = defaultdict(lambda: np.zeros(9), q_X)
+        # Load Q-tables
+        with open("qtables/agent_X_qtable_nash.pkl", "rb") as f:
+            q_X = pickle.load(f)
+        agent_X.q_table = defaultdict(lambda: np.zeros(9), q_X)
 
-    with open("qtables/agent_O_qtable_nash.pkl", "rb") as f:
-        q_O = pickle.load(f)
-    agent_O.q_table = defaultdict(lambda: np.zeros(9), q_O)
+        with open("qtables/agent_O_qtable_nash.pkl", "rb") as f:
+            q_O = pickle.load(f)
+        agent_O.q_table = defaultdict(lambda: np.zeros(9), q_O)
+
+    elif strategy == "minimax":
+        agent_X = QAgent_Minimax("X")
+        agent_O = QAgent_Minimax("O")
+
+        # Load Q-tables
+        with open("qtables/agent_X_qtable_minimax.pkl", "rb") as f:
+            q_X = pickle.load(f)
+        agent_X.q_table = defaultdict(lambda: np.zeros(9), q_X)
+
+        with open("qtables/agent_O_qtable_minimax.pkl", "rb") as f:
+            q_O = pickle.load(f)
+        agent_O.q_table = defaultdict(lambda: np.zeros(9), q_O)
+
+    elif strategy == "maximax":
+        agent_X = QAgent_Maximax("X")
+        agent_O = QAgent_Maximax("O")
+
+        # Load Q-tables
+        with open("qtables/agent_X_qtable_maximax.pkl", "rb") as f:
+            q_X = pickle.load(f)
+        agent_X.q_table = defaultdict(lambda: np.zeros(9), q_X)
+
+        with open("qtables/agent_O_qtable_maximax.pkl", "rb") as f:
+            q_O = pickle.load(f)
+        agent_O.q_table = defaultdict(lambda: np.zeros(9), q_O)
 
     return agent_X, agent_O
 
@@ -65,7 +94,7 @@ st.markdown("""
     h2 {
         text-align: center; 
         font-size: 20px; font-weight: normal;
-        padding: 0rem 15rem;      
+        padding: 0rem 18rem;      
     }
     
     /* Strategy label above tabs */
@@ -117,11 +146,11 @@ st.markdown("""
 
 # Page title
 st.markdown("<h1>Game-Theoretic 2-Agent Tic-Tac-Toe</h1>", unsafe_allow_html=True)
-st.markdown('<h2>Observing different strategies to train Q-learning agents for optimal play. Agents have already been trained and are loaded to visualize strategies in new games. Read more <a href="https://leesadie.vercel.app/" target="_blank">here</a>, and find code <a href="https://leesadie.vercel.app/" target="_blank">here</a>.</h2>', unsafe_allow_html=True)
+st.markdown('<h2>Observing different strategies to train Q-learning agents for optimal play. Agents have already been trained and are loaded to visualize strategies in new games. Find code <a href="https://github.com/leesadie/gt_tic-tac-toe" target="_blank">here</a>.</h2>', unsafe_allow_html=True)
 
 # Strategy selection tabs (placeholder)
 st.markdown('<div class="strategy-section">Select strategy:</div>', unsafe_allow_html=True)
-tab1, tab2, tab3, tab4 = st.tabs(["Nash equilibrium", "Minimax", "Maximax", "Dominance"])
+tab1, tab2, tab3 = st.tabs(["Nash equilibrium", "Minimax", "Maximax"])
 
 # Render board upon page load
 def render_board(board):
@@ -148,7 +177,7 @@ def render_board(board):
 
 # ---- Nash equilibrium ---- #
 with tab1:
-    agent_X, agent_O = load_agents()
+    agent_X, agent_O = load_agents(strategy="nash")
 
     # Layout
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -171,7 +200,7 @@ with tab1:
     col_left, col_center, col_right = st.columns([2,0.5,2])
     with col_center:
         st.markdown("<div style='margin-top:40px;'></div>", unsafe_allow_html=True)
-        play = st.button("Play new game", key="play_button")
+        play = st.button("Play new game", key="play_button_nash")
 
     if play:
         board = create_board()
@@ -210,15 +239,140 @@ with tab1:
         result_placeholder.markdown(
             f'<div class="result-banner">{result_text}</div>', unsafe_allow_html=True
         )
-# Other tabs
+
+
+# ---- Minimax ---- #
 with tab2:
-    st.subheader("Minimax Strategy (coming soon)")
-    st.info("Agents play using minimax optimal play.")
+    agent_X, agent_O = load_agents(strategy="minimax")
 
+    # Layout
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col1:
+        st.markdown("### Agent X")
+    with col3:
+        st.markdown("### Agent O")
+
+    # Placeholder for the board
+    with col2:
+        board_container = st.container()
+        with board_container:
+            board_placeholder = st.empty()
+            result_placeholder = st.empty()
+
+    # Show empty grid upon load
+    with board_placeholder.container():
+        render_board(create_board())
+
+    col_left, col_center, col_right = st.columns([2,0.5,2])
+    with col_center:
+        st.markdown("<div style='margin-top:40px;'></div>", unsafe_allow_html=True)
+        play = st.button("Play new game", key="play_button_minimax")
+
+    if play:
+        board = create_board()
+        state = board_to_state(board)
+        current, other = agent_X, agent_O
+
+        # Game loop
+        while True:
+            available = available_moves(board)
+            if not available:
+                result = "Draw"
+                break
+
+            action = current.choose_action(state, available, greedy=True)
+            board[action] = current.mark
+
+            # Render board as a 3x3 grid
+            with board_placeholder.container():
+                render_board(board)  
+
+            time.sleep(1.0)
+
+            winner = check_winner(board)
+            if winner:
+                result = winner
+                break
+
+            state = board_to_state(board)
+            current, other = other, current
+
+        # Show result
+        if result == "Draw":
+            result_text = "Draw!"
+        else:
+            result_text = f"{result} wins!"
+        result_placeholder.markdown(
+            f'<div class="result-banner">{result_text}</div>', unsafe_allow_html=True
+        )
+
+
+# ---- Maximax ---- #
 with tab3:
-    st.subheader("Maximax Strategy (coming soon)")
-    st.info("Agents play using maximax optimal play.")
+    agent_X, agent_O = load_agents(strategy="maximax")
 
-with tab4:
-    st.subheader("Dominance Strategy (coming soon)")
-    st.info("Agents play according to their own dominant strategy.")
+    # Layout
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col1:
+        st.markdown("### Agent X")
+    with col3:
+        st.markdown("### Agent O")
+
+    # Placeholder for the board
+    with col2:
+        board_container = st.container()
+        with board_container:
+            board_placeholder = st.empty()
+            result_placeholder = st.empty()
+
+    # Show empty grid upon load
+    with board_placeholder.container():
+        render_board(create_board())
+
+    col_left, col_center, col_right = st.columns([2,0.5,2])
+    with col_center:
+        st.markdown("<div style='margin-top:40px;'></div>", unsafe_allow_html=True)
+        play = st.button("Play new game", key="play_button_maximax")
+
+    if play:
+        board = create_board()
+        state = board_to_state(board)
+        
+        # Random alternation - so sometimes O starts
+        if random.random() < 0.5:
+            current, other = agent_X, agent_O
+        else:
+            current, other = agent_O, agent_X
+
+        # Game loop
+        while True:
+            available = available_moves(board)
+            if not available:
+                result = "Draw"
+                break
+
+            action = current.choose_action(state, available, greedy=True)
+            board[action] = current.mark
+
+            # Render board as a 3x3 grid
+            with board_placeholder.container():
+                render_board(board)  
+
+            time.sleep(1.0)
+
+            winner = check_winner(board)
+            if winner:
+                result = winner
+                break
+
+            state = board_to_state(board)
+            current, other = other, current
+
+        # Show result
+        if result == "Draw":
+            result_text = "Draw!"
+        else:
+            result_text = f"{result} wins!"
+        result_placeholder.markdown(
+            f'<div class="result-banner">{result_text}</div>', unsafe_allow_html=True
+        )
