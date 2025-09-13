@@ -1,3 +1,2 @@
 numpy==2.3.3
 streamlit==1.37.1
-python==3.12.2
