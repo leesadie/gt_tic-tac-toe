@@ -138,15 +138,12 @@ st.markdown("""
     .board-cell.left {border-left: none;}
     .board-cell.right {border-right: none;}
     .board-cell.bottom {border-bottom: none;}
-            
-    /* Play button wrapper */
-    .play-button-wrapper {display: flex; justify-content: center; margin-top: 40px;}
 </style>
 """, unsafe_allow_html=True)
 
 # Page title
-st.markdown("<h1>Game-Theoretic 2-Agent Tic-Tac-Toe</h1>", unsafe_allow_html=True)
-st.markdown('<h2>Observing different strategies to train Q-learning agents for optimal play. Agents have already been trained and are loaded to visualize strategies in new games. Find code <a href="https://github.com/leesadie/gt_tic-tac-toe" target="_blank">here</a>.</h2>', unsafe_allow_html=True)
+st.markdown("<h1>Game-Theoretic Q-Learning for Tic-Tac-Toe</h1>", unsafe_allow_html=True)
+st.markdown('<h2>Agents have been trained with different strategies using Q-learning and are loaded to visualize strategies in new games. Find code <a href="https://github.com/leesadie/gt_tic-tac-toe" target="_blank">here</a>.</h2>', unsafe_allow_html=True)
 
 # Strategy selection tabs (placeholder)
 st.markdown('<div class="strategy-section">Select strategy:</div>', unsafe_allow_html=True)
@@ -177,6 +174,10 @@ def render_board(board):
 
 # ---- Nash equilibrium ---- #
 with tab1:
+    # Info
+    st.info("A change in one player's strategy has no effect if the other player's strategies remain fixed; expected outcome is a draw if both players play optimally.")
+    
+    # Load agents
     agent_X, agent_O = load_agents(strategy="nash")
 
     # Layout
@@ -199,7 +200,7 @@ with tab1:
 
     col_left, col_center, col_right = st.columns([2,0.5,2])
     with col_center:
-        st.markdown("<div style='margin-top:40px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
         play = st.button("Play new game", key="play_button_nash")
 
     if play:
@@ -243,6 +244,10 @@ with tab1:
 
 # ---- Minimax ---- #
 with tab2:
+    # Info
+    st.info("Assuming the opponent always plays optimally, each player maximizes their worst-case outcome; expected outcome is a draw if both players play optimally.")
+    
+    # Load agents
     agent_X, agent_O = load_agents(strategy="minimax")
 
     # Layout
@@ -265,7 +270,7 @@ with tab2:
 
     col_left, col_center, col_right = st.columns([2,0.5,2])
     with col_center:
-        st.markdown("<div style='margin-top:40px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
         play = st.button("Play new game", key="play_button_minimax")
 
     if play:
@@ -309,6 +314,10 @@ with tab2:
 
 # ---- Maximax ---- #
 with tab3:
+    # Info
+    st.info("Assuming the opponent plays to maximize the player's payoff, each player chooses the best-case outcome; expected outcome is a win for the first mover since the first mover's optimism dominates.")
+    
+    # Load agents
     agent_X, agent_O = load_agents(strategy="maximax")
 
     # Layout
@@ -331,7 +340,7 @@ with tab3:
 
     col_left, col_center, col_right = st.columns([2,0.5,2])
     with col_center:
-        st.markdown("<div style='margin-top:40px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top:20px;'></div>", unsafe_allow_html=True)
         play = st.button("Play new game", key="play_button_maximax")
 
     if play:
